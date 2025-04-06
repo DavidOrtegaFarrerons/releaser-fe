@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+  frontend:
+    build: .
+    ports:
+      - '5174:5174'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["yarn", "dev"]
