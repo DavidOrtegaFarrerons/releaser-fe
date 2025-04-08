@@ -80,7 +80,7 @@ export function ReleaseTable() {
                     </Group>
                 </Table.Td>
                 <Table.Td>
-                    <a href={`https://jira.company.com/browse/${ticket.key}`} target="_blank" rel="noopener noreferrer">
+                    <a href={ticket.url} target="_blank" rel="noopener noreferrer">
                         {ticket.key || 'N/A'}
                     </a>
                 </Table.Td>
@@ -92,6 +92,7 @@ export function ReleaseTable() {
                         </a>
                     ) : 'No PR'}
                 </Table.Td>
+                <Table.Td>{pr.status || 'N/A'}</Table.Td>
                 <Table.Td>{pr.mergeStatus || 'N/A'}</Table.Td>
             </Table.Tr>
         );
@@ -111,9 +112,10 @@ export function ReleaseTable() {
                         </Table.Th>
                         <Table.Th>Assignee</Table.Th>
                         <Table.Th>Ticket</Table.Th>
-                        <Table.Th>Status</Table.Th>
+                        <Table.Th>Ticket Status</Table.Th>
                         <Table.Th>Pull Request</Table.Th>
                         <Table.Th>PR Status</Table.Th>
+                        <Table.Th>Merge Status</Table.Th>
                     </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>{rows}</Table.Tbody>
