@@ -5,15 +5,16 @@ RUN corepack enable && corepack prepare yarn@4.6.0 --activate
 
 WORKDIR /app
 
-# Copy only what's needed for dependency install
-COPY package.json yarn.lock ./
+# First copy only the files needed for dependency installation
+COPY package.json yarn.lock .yarnrc.yml ./
 
-# Use node_modules linker instead of PnP
-RUN yarn config set nodeLinker node-modules && yarn install --mode update-lockfile
+# Install dependencies
+RUN yarn install --immutable
 
-# Now copy the rest of your app
+# Copy the rest of the application files
 COPY . .
-# Expose the Vite port (adjust if you use a different one)
+
+# Expose the Vite port
 EXPOSE 5174
 
 # Default command
