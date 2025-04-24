@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = 'http://localhost:8080'
+const API_URL = 'http://localhost:8080/api'
 
 export async function getReleaseTableData() {
     try {
@@ -13,5 +13,17 @@ export async function getReleaseTableData() {
         } else {
             throw new Error("An unexpected error ocurred")
         }
+    }
+}
+
+export async function setAutoCompletePR(pullRequestId: string) : Promise<TableTicket[]> {
+    try {
+        const response = await axios.post(`${API_URL}/set-autocomplete`, {
+            pullRequestId: pullRequestId,
+        });
+
+        return response.data; // This is already the parsed JSON
+    } catch (error) {
+        throw new Error(error.toString());
     }
 }

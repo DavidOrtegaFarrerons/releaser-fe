@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import cx from 'clsx';
-import { Avatar, Checkbox, Group, ScrollArea, Table, Text, Loader } from '@mantine/core';
+import { Avatar, Checkbox, Group, ScrollArea, Table, Text, Loader, Button } from '@mantine/core';
 import classes from './TableSelection.module.css';
-import { getReleaseTableData } from "../services/releaseTable.ts";
+import {getReleaseTableData, setAutoCompletePR} from "../services/releaseTable.ts";
 
 export function ReleaseTable() {
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selection, setSelection] = useState([]);
+
+    function canBeAutocompleted(pr: PullRequest) {
+        return pr.status == "active" && pr.reviewStatus == "Approved";
+    }
 
     useEffect(() => {
         async function fetchData() {
@@ -92,8 +96,26 @@ export function ReleaseTable() {
                         </a>
                     ) : 'No PR'}
                 </Table.Td>
-                <Table.Td>{pr.status || 'N/A'}</Table.Td>
+                <Table.Td>{pr.status || 'No PR found'}</Table.Td>
+                <Table.Td>{pr.reviewStatus || 'N/A'}</Table.Td>
                 <Table.Td>{pr.mergeStatus || 'N/A'}</Table.Td>
+                <Table.Td>
+                    {canBeAutocompleted(pr) ? (
+                        <Button
+                            size="xs"
+                            onClick={async () => {
+                                try {
+                                    await setAutoCompletePR(pr.id);
+                                    alert(`Autocomplete set for PR #${pr.id}`);
+                                } catch (error) {
+                                    alert(`Failed to set autocomplete: ${error.message}`);
+                                }
+                            }}
+                        >
+                            Auto Complete
+                        </Button>
+                    ) : {}}
+                </Table.Td>
             </Table.Tr>
         );
     });
@@ -115,6 +137,7 @@ export function ReleaseTable() {
                         <Table.Th>Ticket Status</Table.Th>
                         <Table.Th>Pull Request</Table.Th>
                         <Table.Th>PR Status</Table.Th>
+                        <Table.Th>Review Status</Table.Th>
                         <Table.Th>Merge Status</Table.Th>
                     </Table.Tr>
                 </Table.Thead>
