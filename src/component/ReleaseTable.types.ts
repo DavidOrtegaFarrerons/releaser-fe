@@ -1,9 +1,9 @@
-interface TableTicket {
+export interface TableTicket {
     pullRequest: PullRequest|null,
     ticket: Ticket,
 }
 
-interface PullRequest {
+export interface PullRequest {
     id: number;
     mergeStatus: string;
     createdBy: string;
@@ -14,10 +14,15 @@ interface PullRequest {
     reviewStatus: string;
 }
 
-interface Ticket {
+export interface Ticket {
     id: number;
     key: string;
-    assignee: string;
+    assignee: Assignee;
     url: string;
     status: string;
+}
+
+interface Assignee {
+    profileImage: string;
+    displayName: string;
 }

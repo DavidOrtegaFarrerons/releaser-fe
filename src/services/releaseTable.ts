@@ -2,9 +2,15 @@ import axios from "axios";
 
 const API_URL = 'http://localhost:8080/api'
 
-export async function getReleaseTableData() {
+export async function getReleaseTableData(releaseName: string|null) {
     try {
-        const response = await axios.get(`${API_URL}/release`)
+        let url = `${API_URL}/release`;
+
+        if (releaseName != null) {
+            url = url + `/${releaseName}`;
+        }
+
+        const response = await axios.get(url)
 
         return response.data
     } catch (error) {
