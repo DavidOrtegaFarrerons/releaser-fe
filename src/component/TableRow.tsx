@@ -41,21 +41,24 @@ export function TableRow({ item, index, selected, onToggleRow }) {
             <Table.Td>{pr.reviewStatus || 'N/A'}</Table.Td>
             <Table.Td>{pr.mergeStatus || 'N/A'}</Table.Td>
             <Table.Td>
-                {canBeAutocompleted(pr) ? (
-                    <Button
-                        size="xs"
-                        onClick={async () => {
-                            try {
-                                await setAutoCompletePR(pr.id);
-                                alert(`Autocomplete set for PR #${pr.id}`);
-                            } catch (error) {
-                                alert(`Failed to set autocomplete: ${error.message}`);
+                <Button
+                    size="xs"
+                    disabled={!canBeAutocompleted(pr)}
+                    onClick={
+                        canBeAutocompleted(pr)
+                            ? async () => {
+                                try {
+                                    await setAutoCompletePR(pr.id);
+                                    alert(`Executing merge for PR #${pr.id}`);
+                                } catch (error: any) {
+                                    alert(`Failed to merge PR: ${error.message}`);
+                                }
                             }
-                        }}
-                    >
-                        Auto Complete
-                    </Button>
-                ) : null}
+                            : undefined
+                    }
+                >
+                    Merge
+                </Button>
             </Table.Td>
         </Table.Tr>
     );

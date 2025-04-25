@@ -44,6 +44,7 @@ export function ReleaseTable({ data }: ReleaseTableProps) {
                         <Table.Th>PR Status</Table.Th>
                         <Table.Th>Review Status</Table.Th>
                         <Table.Th>Merge Status</Table.Th>
+                        <Table.Th>Action</Table.Th>
                     </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
