@@ -1,8 +1,8 @@
 import { Table, Checkbox, Group, Avatar, Text, Button } from '@mantine/core';
 import cx from 'clsx';
-import { canBeAutocompleted } from './utils';
+import { canBeAutocompleted } from './utils.ts';
 import classes from './TableSelection.module.css';
-import { setAutoCompletePR } from '../services/releaseTable';
+import { setAutoCompletePR } from '../../services/releaseTable.ts';
 
 export function TableRow({ item, index, selected, onToggleRow }) {
     const id = index.toString();

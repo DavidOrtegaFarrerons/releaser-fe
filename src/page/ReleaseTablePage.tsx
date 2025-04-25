@@ -1,12 +1,14 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import {use, useEffect, useState} from 'react';
 import { Loader, Text } from '@mantine/core';
-import { ReleaseTable } from '../component/ReleaseTable.tsx';
+import { ReleaseTable } from '../component/ReleaseTable/ReleaseTable.tsx';
 import {getReleaseTableData} from "../services/releaseTable.ts";
+import ReleaseNavigation from "../component/ReleaseNavigation/ReleaseNavigation.tsx";
 
 function ReleaseTablePage() {
     const { releaseName } = useParams<{ releaseName: string }>();
-    const [data, setData] = useState<any[]>([]);
+    const [ currentRelease, setCurrentRelease ] = useState('')
+    const [tableTickets, setTableTickets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -15,7 +17,8 @@ function ReleaseTablePage() {
             try {
                 setLoading(true);
                 const response = await getReleaseTableData(releaseName);
-                setData(response);
+                setCurrentRelease(response.currentRelease);
+                setTableTickets(response.tableTickets);
             } catch (err: any) {
                 setError(err.message);
             } finally {
@@ -29,7 +32,12 @@ function ReleaseTablePage() {
     if (loading) return <Loader />;
     if (error) return <Text c="red">Error: {error}</Text>;
 
-    return <ReleaseTable data={data} />;
+    return (
+        <div>
+            <ReleaseNavigation currentRelease={currentRelease} />
+            <ReleaseTable tableTickets={tableTickets} />
+        </div>
+    );
 }
 
 export default ReleaseTablePage;

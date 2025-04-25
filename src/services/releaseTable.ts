@@ -1,8 +1,9 @@
 import axios from "axios";
+import {Response} from "../component/ReleaseTable/ReleaseTable.types.ts";
 
 const API_URL = 'http://localhost:8080/api'
 
-export async function getReleaseTableData(releaseName: string|null) {
+export async function getReleaseTableData(releaseName: string|null) : Promise<Response> {
     try {
         let url = `${API_URL}/release`;
 

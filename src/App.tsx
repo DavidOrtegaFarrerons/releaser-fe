@@ -1,7 +1,6 @@
 import "@mantine/core/styles.css";
 import { MantineProvider } from "@mantine/core";
 import { theme } from "./theme";
-import {ReleaseTable} from "./component/ReleaseTable.tsx";
 import {BrowserRouter, Route, Router, Routes} from "react-router-dom";
 import ReleaseTablePage from "./page/ReleaseTablePage.tsx";
 

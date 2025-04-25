@@ -1,17 +1,19 @@
 import { ScrollArea, Table, Loader, Checkbox } from '@mantine/core';
-import { TableRow } from './TableRow';
+import { TableRow } from './TableRow.tsx';
 import { useState, useEffect } from 'react';
+import {TableTicket} from "./ReleaseTable.types.ts";
 
 type ReleaseTableProps = {
-    data: any[];
+    tableTickets: TableTicket[];
 };
 
-export function ReleaseTable({ data }: ReleaseTableProps) {
+export function ReleaseTable({ tableTickets }: ReleaseTableProps) {
     const [selection, setSelection] = useState<string[]>([]);
 
+    console.log(tableTickets)
     useEffect(() => {
         setSelection([]);
-    }, [data]);
+    }, [tableTickets]);
 
     const toggleRow = (id: string) => {
         setSelection((current) =>
@@ -21,7 +23,7 @@ export function ReleaseTable({ data }: ReleaseTableProps) {
 
     const toggleAll = () => {
         setSelection((current) =>
-            current.length === data.length ? [] : data.map((_, index) => index.toString())
+            current.length === tableTickets.length ? [] : tableTickets.map((_, index) => index.toString())
         );
     };
 
@@ -33,8 +35,8 @@ export function ReleaseTable({ data }: ReleaseTableProps) {
                         <Table.Th w={40}>
                             <Checkbox
                                 onChange={toggleAll}
-                                checked={selection.length === data.length && data.length > 0}
-                                indeterminate={selection.length > 0 && selection.length !== data.length}
+                                checked={selection.length === tableTickets.length && tableTickets.length > 0}
+                                indeterminate={selection.length > 0 && selection.length !== tableTickets.length}
                             />
                         </Table.Th>
                         <Table.Th>Assignee</Table.Th>
@@ -48,7 +50,7 @@ export function ReleaseTable({ data }: ReleaseTableProps) {
                     </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                    {data.map((item, index) => (
+                    {tableTickets.map((item, index) => (
                         <TableRow
                             key={index}
                             item={item}

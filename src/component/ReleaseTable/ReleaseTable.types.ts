@@ -1,3 +1,8 @@
+export interface Response {
+    tableTickets: TableTicket[]
+    currentRelease: string
+}
+
 export interface TableTicket {
     pullRequest: PullRequest|null,
     ticket: Ticket,
@@ -22,7 +27,7 @@ export interface Ticket {
     status: string;
 }
 
-interface Assignee {
+export interface Assignee {
     profileImage: string;
     displayName: string;
 }
