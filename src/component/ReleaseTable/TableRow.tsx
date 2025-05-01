@@ -33,7 +33,7 @@ export function TableRow({ item, index, selected, onToggleRow }) {
             <Table.Td>
                 {pr.url ? (
                     <a href={pr.url} target="_blank" rel="noopener noreferrer">
-                        {pr.branchName || `PR #${pr.id}`}
+                        {'PR link' || `PR #${pr.id}`}
                     </a>
                 ) : 'No PR'}
             </Table.Td>
