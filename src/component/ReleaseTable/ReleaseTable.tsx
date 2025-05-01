@@ -1,7 +1,9 @@
-import { ScrollArea, Table, Loader, Checkbox } from '@mantine/core';
-import { TableRow } from './TableRow.tsx';
+import {ScrollArea, Table, Checkbox, UnstyledButton, Center, Text, rem, Group} from '@mantine/core';
+import { IconChevronUp, IconChevronDown, IconSelector } from '@tabler/icons-react';
 import { useState, useEffect } from 'react';
-import {TableTicket} from "./ReleaseTable.types.ts";
+import { TableRow } from './TableRow.tsx';
+import { TableTicket } from './ReleaseTable.types.ts';
+import { sortData } from './utils.ts';
 
 type ReleaseTableProps = {
     tableTickets: TableTicket[];
@@ -9,10 +11,13 @@ type ReleaseTableProps = {
 
 export function ReleaseTable({ tableTickets }: ReleaseTableProps) {
     const [selection, setSelection] = useState<string[]>([]);
+    const [sortedData, setSortedData] = useState<TableTicket[]>(tableTickets);
+    const [sortBy, setSortBy] = useState<string | null>(null);
+    const [reverseSortDirection, setReverseSortDirection] = useState(false);
 
-    console.log(tableTickets)
     useEffect(() => {
         setSelection([]);
+        setSortedData(tableTickets);
     }, [tableTickets]);
 
     const toggleRow = (id: string) => {
@@ -24,6 +29,38 @@ export function ReleaseTable({ tableTickets }: ReleaseTableProps) {
     const toggleAll = () => {
         setSelection((current) =>
             current.length === tableTickets.length ? [] : tableTickets.map((_, index) => index.toString())
+        );
+    };
+
+    const setSorting = (field: string) => {
+        const reversed = field === sortBy ? !reverseSortDirection : false;
+        setReverseSortDirection(reversed);
+        setSortBy(field);
+        const sorted = sortData(tableTickets, field, reversed ? 'desc' : 'asc');
+        setSortedData(sorted);
+    };
+
+    const ThSortable = ({ children, field }: { children: React.ReactNode; field: string }) => {
+        const Icon =
+            sortBy === field
+                ? reverseSortDirection
+                    ? IconChevronUp
+                    : IconChevronDown
+                : IconSelector;
+
+        return (
+            <Table.Th>
+                <UnstyledButton onClick={() => setSorting(field)} style={{ width: '100%' }}>
+                    <Group justify="space-between">
+                        <Text fw={500} fz="sm">
+                            {children}
+                        </Text>
+                        <Center>
+                            <Icon size={14} stroke={1.5} />
+                        </Center>
+                    </Group>
+                </UnstyledButton>
+            </Table.Th>
         );
     };
 
@@ -39,18 +76,18 @@ export function ReleaseTable({ tableTickets }: ReleaseTableProps) {
                                 indeterminate={selection.length > 0 && selection.length !== tableTickets.length}
                             />
                         </Table.Th>
-                        <Table.Th>Assignee</Table.Th>
-                        <Table.Th>Ticket</Table.Th>
-                        <Table.Th>Ticket Status</Table.Th>
-                        <Table.Th>Pull Request</Table.Th>
-                        <Table.Th>PR Status</Table.Th>
-                        <Table.Th>Review Status</Table.Th>
-                        <Table.Th>Merge Status</Table.Th>
+                        <ThSortable field="ticket.assignee.displayName">Assignee</ThSortable>
+                        <ThSortable field="ticket.key">Ticket</ThSortable>
+                        <ThSortable field="ticket.status">Ticket Status</ThSortable>
+                        <ThSortable field="pullRequest.branchName">Pull Request</ThSortable>
+                        <ThSortable field="pullRequest.status">PR Status</ThSortable>
+                        <ThSortable field="pullRequest.reviewStatus">Review Status</ThSortable>
+                        <ThSortable field="pullRequest.mergeStatus">Merge Status</ThSortable>
                         <Table.Th>Action</Table.Th>
                     </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                    {tableTickets.map((item, index) => (
+                    {sortedData.map((item, index) => (
                         <TableRow
                             key={index}
                             item={item}
