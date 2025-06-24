@@ -1,35 +1,59 @@
-import {ScrollArea, Table, Checkbox, UnstyledButton, Center, Text, rem, Group} from '@mantine/core';
+import {
+    ScrollArea,
+    Table,
+    Checkbox,
+    UnstyledButton,
+    Center,
+    Text,
+    Group,
+} from '@mantine/core';
 import { IconChevronUp, IconChevronDown, IconSelector } from '@tabler/icons-react';
-import { useState, useEffect } from 'react';
-import { TableRow } from './TableRow.tsx';
-import { TableTicket } from './ReleaseTable.types.ts';
-import { sortData } from './utils.ts';
+import React, { useState, useEffect, useMemo } from 'react';
+
+import { TableRow } from './TableRow';
+import { TableTicket } from './ReleaseTable.types';
+import { sortData, canBeAutocompleted } from './utils';
 
 type ReleaseTableProps = {
     tableTickets: TableTicket[];
+    onSelectionChange: (ids: string[]) => void; // NEW
 };
 
-export function ReleaseTable({ tableTickets }: ReleaseTableProps) {
+export function ReleaseTable({ tableTickets, onSelectionChange }: ReleaseTableProps) {
     const [selection, setSelection] = useState<string[]>([]);
     const [sortedData, setSortedData] = useState<TableTicket[]>(tableTickets);
     const [sortBy, setSortBy] = useState<string | null>(null);
     const [reverseSortDirection, setReverseSortDirection] = useState(false);
 
+    const mergeableIds = useMemo(
+        () =>
+            tableTickets
+                .map((t, idx) => (canBeAutocompleted(t.pullRequest) ? idx.toString() : null))
+                .filter(Boolean) as string[],
+        [tableTickets]
+    );
+
     useEffect(() => {
         setSelection([]);
         setSortedData(tableTickets);
-    }, [tableTickets]);
+        onSelectionChange([]); // keep parent in sync
+    }, [tableTickets, onSelectionChange]);
 
     const toggleRow = (id: string) => {
-        setSelection((current) =>
-            current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
-        );
+        if (!mergeableIds.includes(id)) return;          // ignore non-mergeable rows
+        setSelection((curr) => {
+            const next = curr.includes(id) ? curr.filter((i) => i !== id) : [...curr, id];
+            onSelectionChange(next);
+            return next;
+        });
     };
 
     const toggleAll = () => {
-        setSelection((current) =>
-            current.length === tableTickets.length ? [] : tableTickets.map((_, index) => index.toString())
-        );
+        setSelection((curr) => {
+            const next = curr.length === mergeableIds.length ? [] : mergeableIds;
+            onSelectionChange(next);
+            return next;
+        });
     };
 
     const setSorting = (field: string) => {
@@ -40,7 +64,13 @@ export function ReleaseTable({ tableTickets }: ReleaseTableProps) {
         setSortedData(sorted);
     };
 
-    const ThSortable = ({ children, field }: { children: React.ReactNode; field: string }) => {
+    const ThSortable = ({
+                            children,
+                            field,
+                        }: {
+        children: React.ReactNode;
+        field: string;
+    }) => {
         const Icon =
             sortBy === field
                 ? reverseSortDirection
@@ -72,10 +102,11 @@ export function ReleaseTable({ tableTickets }: ReleaseTableProps) {
                         <Table.Th w={40}>
                             <Checkbox
                                 onChange={toggleAll}
-                                checked={selection.length === tableTickets.length && tableTickets.length > 0}
-                                indeterminate={selection.length > 0 && selection.length !== tableTickets.length}
+                                checked={selection.length === mergeableIds.length && mergeableIds.length > 0}
+                                indeterminate={selection.length > 0 && selection.length < mergeableIds.length}
                             />
                         </Table.Th>
+
                         <ThSortable field="ticket.assignee.displayName">Assignee</ThSortable>
                         <ThSortable field="ticket.key">Ticket</ThSortable>
                         <ThSortable field="ticket.status">Ticket Status</ThSortable>
@@ -86,6 +117,7 @@ export function ReleaseTable({ tableTickets }: ReleaseTableProps) {
                         <Table.Th>Action</Table.Th>
                     </Table.Tr>
                 </Table.Thead>
+
                 <Table.Tbody>
                     {sortedData.map((item, index) => (
                         <TableRow

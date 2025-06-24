@@ -1,26 +1,42 @@
 import React, { useState } from 'react';
-import { Table, Checkbox, Group, Avatar, Text, Button, Modal, Select, Textarea } from '@mantine/core';
+import {
+    Table,
+    Checkbox,
+    Group,
+    Avatar,
+    Text,
+    Button,
+    Modal,
+    Select,
+    Textarea,
+} from '@mantine/core';
 import cx from 'clsx';
-import { canBeAutocompleted } from './utils.ts';
+
+import { canBeAutocompleted } from './utils';
 import classes from './TableSelection.module.css';
-import { setAutoCompletePR } from '../../services/releaseTable.ts';
+import { setAutoCompletePR } from '../../services/releaseTable';
+import { addTask } from '../../services/task';
+import { useParams } from 'react-router-dom';
 
-import {addTask} from "../../services/task.ts";
-import {useParams} from "react-router-dom";
+type TableRowProps = {
+    item: any;
+    index: number;
+    selected: boolean;
+    onToggleRow: (id: string) => void;
+};
 
-export function TableRow({ item, index, selected, onToggleRow }) {
+export function TableRow({ item, index, selected, onToggleRow }: TableRowProps) {
     const { releaseName } = useParams();
     const id = index.toString();
     const ticket = item.ticket;
     const pr = item.pullRequest;
+    const isMergeable = canBeAutocompleted(pr);
 
-    // Modal state
     const [opened, setOpened] = useState(false);
     const [type, setType] = useState('');
     const [content, setContent] = useState('');
     const [errors, setErrors] = useState<{ type?: string; content?: string }>({});
 
-    // Validation helper
     const validate = () => {
         const newErrors: typeof errors = {};
         if (type !== 'PRE' && type !== 'POST') {
@@ -35,14 +51,8 @@ export function TableRow({ item, index, selected, onToggleRow }) {
 
     const handleSubmit = async () => {
         if (!validate()) return;
-
         try {
-            await addTask(
-                pr?.id,
-                 releaseName,
-                type,
-                content,
-            );
+            await addTask(pr?.id, releaseName, type, content);
             alert('Task added successfully');
             setOpened(false);
             setType('');
@@ -57,8 +67,13 @@ export function TableRow({ item, index, selected, onToggleRow }) {
         <>
             <Table.Tr key={id} className={cx({ [classes.rowSelected]: selected })}>
                 <Table.Td>
-                    <Checkbox checked={selected} onChange={() => onToggleRow(id)} />
+                    <Checkbox
+                        checked={selected}
+                        disabled={!isMergeable}
+                        onChange={() => onToggleRow(id)}
+                    />
                 </Table.Td>
+
                 <Table.Td>
                     <Group gap="sm">
                         {ticket.assignee?.profileImage && (
@@ -69,30 +84,35 @@ export function TableRow({ item, index, selected, onToggleRow }) {
                         </Text>
                     </Group>
                 </Table.Td>
+
                 <Table.Td>
                     <a href={ticket.url} target="_blank" rel="noopener noreferrer">
                         {ticket.key || 'N/A'}
                     </a>
                 </Table.Td>
+
                 <Table.Td>{ticket.status || 'N/A'}</Table.Td>
+
                 <Table.Td>
                     {pr?.url ? (
-                        <a href={pr?.url} target="_blank" rel="noopener noreferrer">
-                            {'PR link' || `PR #${pr?.id}`}
+                        <a href={pr.url} target="_blank" rel="noopener noreferrer">
+                            PR link
                         </a>
                     ) : (
                         'No PR'
                     )}
                 </Table.Td>
+
                 <Table.Td>{pr?.status || 'No PR found'}</Table.Td>
                 <Table.Td>{pr?.reviewStatus || 'N/A'}</Table.Td>
                 <Table.Td>{pr?.mergeStatus || 'N/A'}</Table.Td>
+
                 <Table.Td>
                     <Button
                         size="xs"
-                        disabled={!canBeAutocompleted(pr)}
+                        disabled={!isMergeable}
                         onClick={
-                            canBeAutocompleted(pr)
+                            isMergeable
                                 ? async () => {
                                     try {
                                         await setAutoCompletePR(pr?.id);
@@ -103,20 +123,20 @@ export function TableRow({ item, index, selected, onToggleRow }) {
                                 }
                                 : undefined
                         }
-                    >Merge</Button>
+                    >
+                        Merge
+                    </Button>
 
-                    { pr?.id ? (
+                    {pr?.id ? (
                         <Button size="xs" ml={8} onClick={() => setOpened(true)}>
                             Add Instructions
                         </Button>
-                        ) : (
-                            <div></div>
-                        )
-                    }
+                    ) : (
+                        <div />
+                    )}
                 </Table.Td>
             </Table.Tr>
 
-            {/* Modal with the form */}
             <Modal opened={opened} onClose={() => setOpened(false)} title="Add Instructions">
                 <Select
                     label="Type"
@@ -140,7 +160,7 @@ export function TableRow({ item, index, selected, onToggleRow }) {
                     required
                     minRows={4}
                 />
-                <Group position="right" mt="md">
+                <Group justify="flex-end" mt="md">
                     <Button onClick={handleSubmit}>Submit</Button>
                 </Group>
             </Modal>

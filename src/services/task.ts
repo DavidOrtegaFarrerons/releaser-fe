@@ -3,6 +3,13 @@ import {Response} from "../component/ReleaseTable/ReleaseTable.types.ts";
 
 const API_URL = 'http://localhost:8080/api'
 
+export type PrTask = {
+    id: number;
+    prId: number;
+    type: 'PRE' | 'POST';
+    content: string;
+};
+
 export async function addTask(prId: string, releaseId: string | undefined, type: string, content: string) : Promise<Response> {
     if (releaseId === undefined) {
         throw new Error("The release cannot be null, check URL");
@@ -28,14 +35,23 @@ export async function addTask(prId: string, releaseId: string | undefined, type:
     }
 }
 
-export async function setAutoCompletePR(pullRequestId: string) : Promise<TableTicket[]> {
-    try {
-        const response = await axios.post(`${API_URL}/set-autocomplete`, {
-            pullRequestId: pullRequestId,
-        });
+export async function getTasksFromPrIdsAndType(prIds: number[], type: string) {
+    if (prIds.length === 0) return [];
 
-        return response.data; // This is already the parsed JSON
+    let url = `${API_URL}/tasks`;
+
+    try {
+        const response = await axios.post(url, {
+            prIds: prIds,
+            type: type,
+        })
+
+        return response.data
     } catch (error) {
-        throw new Error(error.toString());
+        if (axios.isAxiosError(error)) {
+            throw new Error(error.response?.data.message || 'Could not retrieve data')
+        } else {
+            throw new Error("An unexpected error ocurred")
+        }
     }
 }

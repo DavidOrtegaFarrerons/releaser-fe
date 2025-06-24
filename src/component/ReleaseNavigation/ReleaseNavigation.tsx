@@ -1,62 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import {Button, TextInput, Group, Center} from '@mantine/core';
-import { useNavigate, useParams } from 'react-router-dom';
+import React from 'react';
+import { Button, TextInput, Center, Group } from '@mantine/core';
+import { useNavigate } from 'react-router-dom';
 
-const getNextRelease = (currentRelease: string) => {
-    const [year, month, release] = currentRelease.split('-');
-    let currentYear = parseInt(year);
-    let currentMonth = parseInt(month);
-    let currentReleaseNumber = release === 'r1' ? 'r2' : 'r1';
-
-    if (release === 'r2') {
-        currentMonth += 1;
-        if (currentMonth > 12) {
-            currentMonth = 1;
-            currentYear += 1;
+const getNextRelease = (current: string) => {
+    const [y, m, r] = current.split('-');
+    let year = Number(y);
+    let month = Number(m);
+    let rel = r === 'r1' ? 'r2' : 'r1';
+    if (r === 'r2') {
+        month += 1;
+        if (month > 12) {
+            month = 1;
+            year += 1;
         }
-        currentReleaseNumber = 'r1';
+        rel = 'r1';
     }
-
-    return `${currentYear}-${currentMonth.toString().padStart(2, '0')}-${currentReleaseNumber}`;
+    return `${year}-${month.toString().padStart(2, '0')}-${rel}`;
 };
 
-const getPreviousRelease = (currentRelease: string) => {
-    const [year, month, release] = currentRelease.split('-');
-    let currentYear = parseInt(year);
-    let currentMonth = parseInt(month);
-    let currentReleaseNumber = release === 'r1' ? 'r2' : 'r1';
-
-    if (release === 'r1') {
-        currentMonth -= 1;
-        if (currentMonth <= 0) {
-            currentMonth = 12;
-            currentYear -= 1;
+const getPreviousRelease = (current: string) => {
+    const [y, m, r] = current.split('-');
+    let year = Number(y);
+    let month = Number(m);
+    let rel = r === 'r1' ? 'r2' : 'r1';
+    if (r === 'r1') {
+        month -= 1;
+        if (month <= 0) {
+            month = 12;
+            year -= 1;
         }
-        currentReleaseNumber = 'r2';
+        rel = 'r2';
     }
-
-    return `${currentYear}-${currentMonth.toString().padStart(2, '0')}-${currentReleaseNumber}`;
+    return `${year}-${month.toString().padStart(2, '0')}-${rel}`;
 };
 
-const ReleaseNavigation = ({ currentRelease }: { currentRelease: string }) => {
+type Props = {
+    currentRelease: string;
+    canStart: boolean;
+    onStart: () => void;
+};
+
+const ReleaseNavigation = ({ currentRelease, canStart, onStart }: Props) => {
     const navigate = useNavigate();
 
     const updateRelease = (newRelease: string) => {
         navigate(`/${newRelease}`);
-    };
-
-    const handleForward = () => {
-        if (currentRelease) {
-            const nextRelease = getNextRelease(currentRelease);
-            updateRelease(nextRelease);
-        }
-    };
-
-    const handleBack = () => {
-        if (currentRelease) {
-            const prevRelease = getPreviousRelease(currentRelease);
-            updateRelease(prevRelease);
-        }
     };
 
     return (
@@ -64,22 +52,29 @@ const ReleaseNavigation = ({ currentRelease }: { currentRelease: string }) => {
             <Center mt={10} mb={5}>
                 <h2>Current Release</h2>
             </Center>
-            <Center mb={20}>
 
-                <Button onClick={handleBack} variant="outline">
-                    ←
-                </Button>
-                <TextInput
-                    value={currentRelease || ''}
-                    onChange={() => {}}
-                    readOnly
-                    style={{ textAlign: 'center' }}
-                    size="md"
-                    mx={10}
-                />
-                <Button onClick={handleForward} variant="outline">
-                    →
-                </Button>
+            <Center mb={20}>
+                <Group align="center">
+                    <Button variant="outline" onClick={() => updateRelease(getPreviousRelease(currentRelease))}>
+                        ←
+                    </Button>
+
+                    <TextInput
+                        value={currentRelease}
+                        readOnly
+                        style={{ textAlign: 'center' }}
+                        size="md"
+                        mx={10}
+                    />
+
+                    <Button variant="outline" onClick={() => updateRelease(getNextRelease(currentRelease))}>
+                        →
+                    </Button>
+
+                    <Button ml="md" onClick={onStart} disabled={false}>
+                        Start Release
+                    </Button>
+                </Group>
             </Center>
         </div>
     );

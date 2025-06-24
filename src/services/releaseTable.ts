@@ -1,5 +1,5 @@
 import axios from "axios";
-import {Response} from "../component/ReleaseTable/ReleaseTable.types.ts";
+import {Response, TableTicket} from "../component/ReleaseTable/ReleaseTable.types.ts";
 
 const API_URL = 'http://localhost:8080/api'
 
@@ -30,6 +30,18 @@ export async function setAutoCompletePR(pullRequestId: string) : Promise<TableTi
         });
 
         return response.data; // This is already the parsed JSON
+    } catch (error) {
+        throw new Error(error.toString());
+    }
+}
+
+export async function setAutoCompletePRs(pullRequestIds: string) : Promise<TableTicket[]> {
+    try {
+        const response = await axios.post(`${API_URL}/set-autocomplete`, {
+            pullRequestIds: pullRequestIds,
+        });
+
+        return response.data;
     } catch (error) {
         throw new Error(error.toString());
     }
